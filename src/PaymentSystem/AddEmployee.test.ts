@@ -4,7 +4,12 @@ import {
     DefaultEmployeeService,
     InMemoryEmployeeRepository,
 } from "./PayrollDatabase.ts";
-import { Employee } from "./Employee.ts";
+import {
+    Employee,
+    HoldMethod,
+    MonthlySchedule,
+    SalariedClassification,
+} from "./Employee.ts";
 
 describe("test add employee", () => {
     it("test add salaried employee", () => {
@@ -14,8 +19,19 @@ describe("test add employee", () => {
         const employee = new Employee(empId, "Bob");
 
         const tx = new AddSalariedEmployee(empId, employee, employeeService);
+        tx.execute();
 
-        const data = employeeService.getEmployee(empId);
-        expect(data).not.toBeUndefined();
+        const emp = employeeService.getEmployee(empId);
+        expect(emp).not.toBeUndefined();
+        expect(emp.getEmpId()).toBe(empId);
+        expect(emp.getName()).toBe("Bob");
+
+        const cls = emp.getClassification();
+        const payDay = emp.getSchedule();
+        const payMethod = emp.getPayMethod();
+
+        expect(cls).toBeInstanceOf(SalariedClassification);
+        expect(payDay).toBeInstanceOf(MonthlySchedule);
+        expect(payMethod).toBeInstanceOf(HoldMethod);
     });
 });

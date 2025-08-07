@@ -1,5 +1,10 @@
-import { Employee } from "./Employee.ts";
-import { EmployeeRepository, EmployeeService } from "./PayrollDatabase.ts";
+import {
+    Employee,
+    HoldMethod,
+    MonthlySchedule,
+    SalariedClassification,
+} from "./Employee.ts";
+import { EmployeeService } from "./PayrollDatabase.ts";
 
 interface Transaction {
     execute(): void;
@@ -7,9 +12,9 @@ interface Transaction {
 
 class AddEmployeeTransaction implements Transaction {
     constructor(
-        public empId: number,
-        private employee: Employee,
-        private employeeService: EmployeeService,
+        protected empId: number,
+        protected employee: Employee,
+        protected employeeService: EmployeeService,
     ) {
     }
 
@@ -28,6 +33,9 @@ export class AddSalariedEmployee extends AddEmployeeTransaction {
     }
 
     execute(): void {
+        this.employee.setClassification(new SalariedClassification());
+        this.employee.setSchedule(new MonthlySchedule());
+        this.employee.setPayemntMethod(new HoldMethod());
         super.execute();
     }
 }

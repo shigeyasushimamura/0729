@@ -23,13 +23,13 @@ export interface EmployeeRepository {
 }
 
 export class InMemoryEmployeeRepository implements EmployeeRepository {
-    private employees = new Map<number, Employee>();
+    private static employees = new Map<number, Employee>();
 
     addEmployee(empId: number, employee: Employee): void {
-        this.employees.set(empId, employee);
+        InMemoryEmployeeRepository.employees.set(empId, employee);
     }
 
     getEmployee(empId: number): Employee | undefined {
-        return this.employees.get(empId);
+        return InMemoryEmployeeRepository.employees.get(empId);
     }
 }
