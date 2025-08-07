@@ -1,6 +1,8 @@
 import {
+    BiweekSchedule,
     Employee,
     HoldMethod,
+    HourlyClassification,
     MonthlySchedule,
     SalariedClassification,
 } from "./Employee.ts";
@@ -38,4 +40,27 @@ export class AddSalariedEmployee extends AddEmployeeTransaction {
         this.employee.setPayemntMethod(new HoldMethod());
         super.execute();
     }
+}
+
+export class AddHourlyEmployee extends AddEmployeeTransaction {
+    constructor(
+        empId: number,
+        employee: Employee,
+        employeeService: EmployeeService,
+        private timeCardList?: TimeCard[],
+    ) {
+        super(empId, employee, employeeService);
+    }
+
+    execute(): void {
+        const cls = new HourlyClassification(this.timeCardList);
+        this.employee.setClassification(cls);
+        this.employee.setSchedule(new BiweekSchedule());
+        this.employee.setPayemntMethod(new HoldMethod());
+        super.execute();
+    }
+}
+
+export class TimeCard {
+    constructor(public id: number, public hour: number, public date: string) {}
 }
