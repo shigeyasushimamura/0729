@@ -67,3 +67,26 @@ export class MonthlySchedule extends PayementSchedule {
 
 export class BiweekSchedule extends PayementSchedule {
 }
+
+// factory
+export class EmployeeFactory {
+    static createSalariedEmployee(empId: number, name: string): Employee {
+        const employee = new Employee(empId, name);
+        employee.setClassification(new SalariedClassification());
+        employee.setSchedule(new MonthlySchedule());
+        employee.setPayemntMethod(new HoldMethod());
+        return employee;
+    }
+
+    static createHourlyEmployee(
+        empId: number,
+        name: string,
+        timeCardList?: TimeCard[],
+    ): Employee {
+        const employee = new Employee(empId, name);
+        employee.setClassification(new HourlyClassification(timeCardList));
+        employee.setSchedule(new BiweekSchedule());
+        employee.setPayemntMethod(new HoldMethod());
+        return employee;
+    }
+}

@@ -1,6 +1,7 @@
 import {
     BiweekSchedule,
     Employee,
+    EmployeeFactory,
     HoldMethod,
     HourlyClassification,
     MonthlySchedule,
@@ -12,52 +13,61 @@ interface Transaction {
     execute(): void;
 }
 
-class AddEmployeeTransaction implements Transaction {
+export class DeleteEmployeeTransaction implements Transaction {
+    constructor(protected empId: number, protected employeeService) {
+    }
+
+    execute(): void {
+        this.employeeService.deleteEmployee(this.empId);
+    }
+}
+
+abstract class AddEmployeeTransaction implements Transaction {
     constructor(
         protected empId: number,
-        protected employee: Employee,
+        protected name: string,
         protected employeeService: EmployeeService,
     ) {
     }
 
-    execute(): void {
-        this.employeeService.addEmployee(this.empId, this.employee);
-    }
+    abstract execute(): void;
 }
 
 export class AddSalariedEmployee extends AddEmployeeTransaction {
     constructor(
         empId: number,
-        employee: Employee,
+        name: string,
         employeeService: EmployeeService,
     ) {
-        super(empId, employee, employeeService);
+        super(empId, name, employeeService);
     }
 
     execute(): void {
-        this.employee.setClassification(new SalariedClassification());
-        this.employee.setSchedule(new MonthlySchedule());
-        this.employee.setPayemntMethod(new HoldMethod());
-        super.execute();
+        const emp = EmployeeFactory.createSalariedEmployee(
+            this.empId,
+            this.name,
+        );
+        this.employeeService.addEmployee(this.empId, emp);
     }
 }
 
 export class AddHourlyEmployee extends AddEmployeeTransaction {
     constructor(
         empId: number,
-        employee: Employee,
+        name: string,
         employeeService: EmployeeService,
         private timeCardList?: TimeCard[],
     ) {
-        super(empId, employee, employeeService);
+        super(empId, name, employeeService);
     }
 
     execute(): void {
-        const cls = new HourlyClassification(this.timeCardList);
-        this.employee.setClassification(cls);
-        this.employee.setSchedule(new BiweekSchedule());
-        this.employee.setPayemntMethod(new HoldMethod());
-        super.execute();
+        const emp = EmployeeFactory.createHourlyEmployee(
+            this.empId,
+            this.name,
+            this.timeCardList,
+        );
+        this.employeeService.addEmployee(this.empId, emp);
     }
 }
 

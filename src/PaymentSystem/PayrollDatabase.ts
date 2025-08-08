@@ -3,6 +3,7 @@ import { Employee } from "./Employee.ts";
 export interface EmployeeService {
     addEmployee(empId: number, employee: Employee): void;
     getEmployee(empId: number): Employee | null;
+    deleteEmployee(empId: number): void;
 }
 
 export class DefaultEmployeeService implements EmployeeService {
@@ -15,11 +16,15 @@ export class DefaultEmployeeService implements EmployeeService {
     getEmployee(empId: number): Employee | null {
         return this.repository.getEmployee(empId);
     }
+    deleteEmployee(empId: number): void {
+        this.repository.deleteEmployee(empId);
+    }
 }
 
 export interface EmployeeRepository {
     addEmployee(empId: number, employee: Employee): void;
     getEmployee(empId: number): Employee | undefined;
+    deleteEmployee(empId: number): void;
 }
 
 export class InMemoryEmployeeRepository implements EmployeeRepository {
@@ -31,5 +36,9 @@ export class InMemoryEmployeeRepository implements EmployeeRepository {
 
     getEmployee(empId: number): Employee | undefined {
         return InMemoryEmployeeRepository.employees.get(empId);
+    }
+
+    deleteEmployee(empId: number): void {
+        InMemoryEmployeeRepository.employees.delete(empId);
     }
 }
