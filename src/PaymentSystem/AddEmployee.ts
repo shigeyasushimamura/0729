@@ -71,6 +71,25 @@ export class AddHourlyEmployee extends AddEmployeeTransaction {
     }
 }
 
+export class AddTImeCardTransaction implements Transaction {
+    constructor(
+        public id: number,
+        public hour: number,
+        public date: string,
+        public empId: number,
+        public service: EmployeeService,
+    ) {
+    }
+
+    execute(): void {
+        const emp = this.service.getEmployee(this.empId);
+        const cls = emp.getClassification();
+        if (!(cls instanceof HourlyClassification)) throw new Error();
+        cls.setTimeCard(new TimeCard(this.id, this.hour, this.date));
+    }
+}
+
 export class TimeCard {
-    constructor(public id: number, public hour: number, public date: string) {}
+    constructor(public id: number, public hour: number, public date: string) {
+    }
 }

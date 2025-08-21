@@ -54,6 +54,9 @@ export class HourlyClassification extends PaymentClassification {
     getTimeCard() {
         return this.timeCardList;
     }
+    setTimeCard(timeCard: TimeCard) {
+        this.timeCardList.push(timeCard);
+    }
 }
 
 export class PaymentMethod {}

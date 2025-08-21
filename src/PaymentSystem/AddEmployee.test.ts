@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
     AddHourlyEmployee,
     AddSalariedEmployee,
+    AddTImeCardTransaction,
     DeleteEmployeeTransaction,
     TimeCard,
 } from "./AddEmployee.ts";
@@ -42,7 +43,7 @@ describe("test add employee", () => {
         expect(payMethod).toBeInstanceOf(HoldMethod);
     });
 
-    it("test add hourly employee", () => {
+    it("test add hourly employee and create Timecard", () => {
         const repository = new InMemoryEmployeeRepository();
         const employeeService = new DefaultEmployeeService(repository);
         const empId = 2;
@@ -74,6 +75,21 @@ describe("test add employee", () => {
         expect(hourlyCls.getTimeCard()).toEqual(timeCardList);
         expect(payDay).toBeInstanceOf(BiweekSchedule);
         expect(payMethod).toBeInstanceOf(HoldMethod);
+
+        // test tx timecard
+        const addTimecardTransaction = new AddTImeCardTransaction(
+            2,
+            10,
+            "2025-02-02",
+            empId,
+            employeeService,
+        );
+        addTimecardTransaction.execute();
+        const ele2 = hourlyCls.getTimeCard().at(1);
+
+        expect(ele2.id).toEqual(2);
+        expect(ele2.hour).toEqual(10);
+        expect(ele2.date).toEqual("2025-02-02");
     });
 
     it("test delete employee", () => {
