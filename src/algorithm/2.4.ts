@@ -33,7 +33,7 @@ class MinHeap<T> {
     deleteMin(): void {
         if (this.isEmpty()) throw new Error("Heap underflow");
 
-        const last = this.box.pop();
+        const last = this.box.pop()!;
         if (this.isEmpty()) return;
 
         this.box[1] = last;
