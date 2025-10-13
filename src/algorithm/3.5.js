@@ -59,3 +59,38 @@ var arr = [5, 3, 8, 4, 1, 9, 2];
 console.log("元の配列:", arr);
 var sortedArr = heapSort(arr);
 console.log("ヒープソート後:", sortedArr);
+function swap(a, i, j) {
+    var tmp = a[i];
+    a[i] = a[j];
+    a[j] = tmp;
+}
+// max-heap版 (親>=子を保証する)
+function heapify(a, i, n) {
+    var k = 2 * i; //左の子
+    if (k <= n) {
+        // 右の子があり、左より大きければ選択
+        k++;
+    }
+    // 子の方が大きければswap
+    if (a[i] < a[k]) {
+        swap(a, i, k);
+        heapify(a, k, n);
+    }
+}
+function makeHeap(a, n) {
+    for (var i = Math.floor(n / 2); i >= 1; i--) {
+        heapify(a, i, n);
+    }
+}
+function heapSort2(a) {
+    var n = a.length - 1;
+    makeHeap(a, n);
+    for (var i = n; i >= 2; i--) {
+        swap(a, 1, i);
+        heapify(a, 1, i - 1);
+    }
+    return a;
+}
+var arr2 = [0, 4, 10, 3, 5, 1];
+console.log("before:", arr2.slice(1));
+console.log("after:", heapSort2(arr2).slice(1));

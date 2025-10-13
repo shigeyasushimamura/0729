@@ -63,3 +63,35 @@ void heapsort(int a[],int n){
         deletemin(&h);
     }
 }
+
+
+
+void heapify(int a[], int i,int j){
+    int k;
+
+    k = 2 * i;
+    if( k <= j){
+        if( k != j && a[k] > a[k+1])
+            k++;
+        if(a[i] > a[k]){
+            swap(&a[i],&a[k]);
+            heapify(a,k,j);
+        }
+    }
+}
+
+void makeheap(int a[], int n){
+    int i;
+    for(i=n;1<=i;i--){
+        heapify(a,i,n);
+    }
+}
+
+void heapsort2(int a[],int n){
+    int i;
+    makeheap(a,n); // (1) 配列をヒープにする
+    for(i=n;2<=i;i--){
+        swap(&a[1],&a[i]); // (2) 根(最大値)と末尾を交換
+        heapify(a,1,i-1);  // (3) 根からヒープを再調整
+    }
+}
