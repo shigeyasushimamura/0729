@@ -61,3 +61,32 @@ while(l<=r){
 return "範囲外"
 }
 
+
+// 2分探索(Binary Searchの活用例)
+interface Log {
+    timestamp:number,
+    message: string
+}
+function findFirstAfterTimeStamp(logs:Log[], targetTime:number):number{
+    let left = 0, right = logs.length - 1;
+    let result = logs.length;
+
+    while(left <= right){
+        const mid = Math.floor((left+right)/2)
+        if(logs[mid].timestamp >= targetTime){
+            result = mid;
+            right = mid- 1;
+        }else {
+            left = mid + 1;
+        }
+    }
+    return result;
+}
+
+console.log("タイムスタンプでソートされたログから、特定時刻以降のデータを取得")
+const logs = [{timestamp:100,message:"No.1"},{timestamp:101,message:"No.2"},{timestamp:102,message:"No.3"},{timestamp:103,message:"No.4"},{timestamp:104,message:"No.5"}]
+console.log(findFirstAfterTimeStamp(logs,101))
+
+
+
+
