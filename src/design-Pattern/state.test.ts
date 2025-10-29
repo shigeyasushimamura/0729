@@ -28,6 +28,7 @@ describe("turnstile test", () => {
       this.thankyouCalled = false;
     }
   }
+
   let controller: MockTurnstileController;
   let turnstile: Turnstile;
 
@@ -36,35 +37,50 @@ describe("turnstile test", () => {
     turnstile = new Turnstile(controller);
   });
 
-  it("Locked + Coin -> Unlocked (unlock呼ばれる)", () => {
-    turnstile.state = State.Locked;
-    turnstile.event(Event.Coin);
+  // ✅ データ駆動テスト
+  it.each([
+    {
+      name: "Locked + Coin -> Unlocked (unlock呼ばれる)",
+      initialState: State.Locked,
+      event: Event.Coin,
+      expectedState: State.Unlocked,
+      expectedAction: "unlock" as const,
+    },
+    {
+      name: "Locked + Pass -> Locked (alarm呼ばれる)",
+      initialState: State.Locked,
+      event: Event.Pass,
+      expectedState: State.Locked,
+      expectedAction: "alarm" as const,
+    },
+    {
+      name: "Unlocked + Coin -> Unlocked (thankyou呼ばれる)",
+      initialState: State.Unlocked,
+      event: Event.Coin,
+      expectedState: State.Unlocked,
+      expectedAction: "thankyou" as const,
+    },
+    {
+      name: "Unlocked + Pass -> Locked (lock呼ばれる)",
+      initialState: State.Unlocked,
+      event: Event.Pass,
+      expectedState: State.Locked,
+      expectedAction: "lock" as const,
+    },
+  ])("$name", ({ initialState, event, expectedState, expectedAction }) => {
+    // 初期状態設定
+    turnstile.setState(initialState);
 
-    expect(turnstile.state).toEqual(State.Unlocked);
-    expect(controller.unlockCalled).toBe(true);
-  });
+    // イベント実行
+    const result = turnstile.event(event);
 
-  it("Locked + Pass -> Locked (alarm呼ばれる)", () => {
-    turnstile.state = State.Locked;
-    turnstile.event(Event.Pass);
+    // 状態遷移の確認
+    expect(turnstile.state).toBe(expectedState);
+    expect(result.previousState).toBe(initialState);
+    expect(result.currentState).toBe(expectedState);
+    expect(result.actionTaken).toBe(expectedAction);
 
-    expect(turnstile.state).toEqual(State.Locked);
-    expect(controller.alarmCalled).toBe(true);
-  });
-
-  it("Unlocked + Coin -> Unlocked (何も起きない)", () => {
-    turnstile.state = State.Unlocked;
-    turnstile.event(Event.Coin);
-
-    expect(turnstile.state).toEqual(State.Unlocked);
-    expect(controller.thankyouCalled).toBe(true);
-  });
-
-  it("Unlocked + Pass -> Locked (lock呼ばれる)", () => {
-    turnstile.state = State.Unlocked;
-    turnstile.event(Event.Pass);
-
-    expect(turnstile.state).toEqual(State.Locked);
-    expect(controller.lockCalled).toBe(true);
+    // コントローラー呼び出しの確認
+    expect(controller[`${expectedAction}Called`]).toBe(true);
   });
 });

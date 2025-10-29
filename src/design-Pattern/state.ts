@@ -17,32 +17,59 @@ export interface TurnstileController {
   thankyou(): void;
 }
 
+export type EventResult = {
+  previousState: State;
+  currentState: State;
+  actionTaken: "unlock" | "lock" | "alarm" | "thankyou" | "none";
+};
+
 export class Turnstile {
-  state: State;
+  private _state: State;
 
   constructor(private controller: TurnstileController) {
-    this.state = State.Locked;
+    this._state = State.Locked;
   }
 
-  event(event: Event): void {
-    switch (this.state) {
+  get state(): State {
+    return this._state;
+  }
+
+  // テスト用
+  setState(state: State): void {
+    this._state = state;
+  }
+
+  event(event: Event): EventResult {
+    const previousState = this._state;
+    let actionTaken: EventResult["actionTaken"] = "none";
+
+    switch (this._state) {
       case State.Locked:
         if (event === Event.Coin) {
-          this.state = State.Unlocked;
+          this._state = State.Unlocked;
           this.controller.unlock();
+          actionTaken = "unlock";
         } else if (event === Event.Pass) {
           this.controller.alarm();
+          actionTaken = "alarm";
         }
         break;
       case State.Unlocked:
         if (event === Event.Pass) {
-          this.state = State.Locked;
+          this._state = State.Locked;
           this.controller.lock();
-        } else if (event == Event.Coin) {
+          actionTaken = "lock";
+        } else if (event === Event.Coin) {
           this.controller.thankyou();
+          actionTaken = "thankyou";
         }
-
         break;
     }
+
+    return {
+      previousState,
+      currentState: this._state,
+      actionTaken,
+    };
   }
 }
