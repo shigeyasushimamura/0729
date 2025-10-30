@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import { Turnstile, State, Event, TurnstileController } from "./state";
 
-describe("turnstile test", () => {
+describe("Turnstile", () => {
   class MockTurnstileController implements TurnstileController {
     unlockCalled = false;
     lockCalled = false;
@@ -37,50 +37,55 @@ describe("turnstile test", () => {
     turnstile = new Turnstile(controller);
   });
 
-  // ✅ データ駆動テスト
-  it.each([
-    {
-      name: "Locked + Coin -> Unlocked (unlock呼ばれる)",
-      initialState: State.Locked,
-      event: Event.Coin,
-      expectedState: State.Unlocked,
-      expectedAction: "unlock" as const,
-    },
-    {
-      name: "Locked + Pass -> Locked (alarm呼ばれる)",
-      initialState: State.Locked,
-      event: Event.Pass,
-      expectedState: State.Locked,
-      expectedAction: "alarm" as const,
-    },
-    {
-      name: "Unlocked + Coin -> Unlocked (thankyou呼ばれる)",
-      initialState: State.Unlocked,
-      event: Event.Coin,
-      expectedState: State.Unlocked,
-      expectedAction: "thankyou" as const,
-    },
-    {
-      name: "Unlocked + Pass -> Locked (lock呼ばれる)",
-      initialState: State.Unlocked,
-      event: Event.Pass,
-      expectedState: State.Locked,
-      expectedAction: "lock" as const,
-    },
-  ])("$name", ({ initialState, event, expectedState, expectedAction }) => {
-    // 初期状態設定
-    turnstile.setState(initialState);
+  // 基本的な状態遷移
+  describe("state transitions", () => {
+    const stateTransitionTestCases = [
+      {
+        name: "should unlock when coin is inserted while locked",
+        initialState: State.Locked,
+        event: Event.Coin,
+        expectedState: State.Unlocked,
+        expectedAction: "unlock" as const,
+      },
+      {
+        name: "should trigger alarm when attempting to pass while locked",
+        initialState: State.Locked,
+        event: Event.Pass,
+        expectedState: State.Locked,
+        expectedAction: "alarm" as const,
+      },
+      {
+        name: "should thank user when coin is inserted while unlocked",
+        initialState: State.Unlocked,
+        event: Event.Coin,
+        expectedState: State.Unlocked,
+        expectedAction: "thankyou" as const,
+      },
+      {
+        name: "should lock when user passes through while unlocked",
+        initialState: State.Unlocked,
+        event: Event.Pass,
+        expectedState: State.Locked,
+        expectedAction: "lock" as const,
+      },
+    ];
 
-    // イベント実行
-    const result = turnstile.event(event);
+    it.each(stateTransitionTestCases)(
+      "$name",
+      ({ initialState, event, expectedState, expectedAction }) => {
+        // Arrange
+        turnstile.setState(initialState);
 
-    // 状態遷移の確認
-    expect(turnstile.state).toBe(expectedState);
-    expect(result.previousState).toBe(initialState);
-    expect(result.currentState).toBe(expectedState);
-    expect(result.actionTaken).toBe(expectedAction);
+        // Act
+        const result = turnstile.event(event);
 
-    // コントローラー呼び出しの確認
-    expect(controller[`${expectedAction}Called`]).toBe(true);
+        // Assert
+        expect(turnstile.state).toBe(expectedState);
+        expect(result.previousState).toBe(initialState);
+        expect(result.currentState).toBe(expectedState);
+        expect(result.actionTaken).toBe(expectedAction);
+        expect(controller[`${expectedAction}Called`]).toBe(true);
+      }
+    );
   });
 });
