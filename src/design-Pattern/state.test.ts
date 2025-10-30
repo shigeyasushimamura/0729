@@ -88,4 +88,56 @@ describe("Turnstile", () => {
       }
     );
   });
+
+  // イベントシーケンス
+  describe("event sequences", () => {
+    const eventSequenceTestCases = [
+      {
+        name: "should maintain consistency through alternating events",
+        initialState: State.Locked,
+        events: [Event.Coin, Event.Pass, Event.Coin, Event.Pass],
+        expectedFinalState: State.Locked,
+        expectedActions: ["unlock", "lock", "unlock", "lock"] as const,
+      },
+      {
+        name: "should handle repeated same-state events",
+        initialState: State.Locked,
+        events: [Event.Pass, Event.Pass, Event.Pass],
+        expectedFinalState: State.Locked,
+        expectedActions: ["alarm", "alarm", "alarm"] as const,
+      },
+    ];
+
+    it.each(eventSequenceTestCases)(
+      "$name",
+      ({ initialState, events, expectedFinalState, expectedActions }) => {
+        turnstile.setState(initialState);
+        const actions: string[] = [];
+
+        events.forEach((event) => {
+          const result = turnstile.event(event);
+          actions.push(result.actionTaken);
+        });
+
+        expect(turnstile.state).toBe(expectedFinalState);
+        expect(actions).toEqual(expectedActions);
+      }
+    );
+  });
+
+  // 初期化検証
+  describe("initialization test", () => {
+    it("should start in locked state", () => {
+      const newTurnstile = new Turnstile(controller);
+      expect(newTurnstile.state).toBe(State.Locked);
+    });
+
+    it("should not call any controller methods on initialization", () => {
+      new Turnstile(controller);
+      expect(controller.unlockCalled).toBe(false);
+      expect(controller.lockCalled).toBe(false);
+      expect(controller.alarmCalled).toBe(false);
+      expect(controller.thankyouCalled).toBe(false);
+    });
+  });
 });
